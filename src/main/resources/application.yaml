@@ -1,5 +1,6 @@
 server:
   port: 8765
+
 spring:
   application:
     name: api-gateway
@@ -9,26 +10,59 @@ spring:
         locator:
           lower-case-service-id: true
       routes:
-        - id: currency-conversion
-          uri: lb://currency-conversion
+        # Rotas para Assinaturas
+        - id: assinatura-service
+          uri: lb://assinaturas
           predicates:
-            - Path=/convert/**
+            - Path=/assinaturas/**
           filters:
             - name: CircuitBreaker
               args:
-                name: currencyConversionCircuitBreaker
-                fallbackUri: forward:/fallback/currency-conversion
-            - RewritePath=/convert/?(?<resto>.*), /currency-conversion-feign/$\{resto}
-        - id: currency-exchange
-          uri: lb://currency-exchange
+                name: assinaturaCircuitBreaker
+                fallbackUri: forward:/fallback/assinaturas
+            - RewritePath=/assinaturas/?(?<resto>.*), /$\{resto}
+
+        # Rotas para Assinaturas
+        - id: scaa-pas
+          uri: lb://scaa-pas
           predicates:
-            - Path=/convertionrate/**
+            - Path=/scaa-pas/**
           filters:
-            - RewritePath=/convertionrate/?(?<resto>.*), /currency-exchange/$\{resto}
+            - name: CircuitBreaker
+              args:
+                name: scaaCircuitBreaker
+                fallbackUri: forward:/fallback/scaa-pas
+            - RewritePath=/scaa-pas/?(?<resto>.*), /$\{resto}
+
+        # Rotas para Aplicativos
+        - id: aplicativo-service
+          uri: lb://aplicativo-service
+          predicates:
+            - Path=/aplicativos/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: aplicativoCircuitBreaker
+                fallbackUri: forward:/fallback/aplicativos
+            - RewritePath=/aplicativos/?(?<resto>.*), /$\{resto}
+
+        # Rotas para Clientes
+        - id: cliente-service
+          uri: lb://cliente-service
+          predicates:
+            - Path=/clientes/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: clienteCircuitBreaker
+                fallbackUri: forward:/fallback/clientes
+            - RewritePath=/clientes/?(?<resto>.*), /$\{resto}
+
 eureka:
   client:
     serviceUrl:
       defaultZone: http://localhost:8761/eureka
+
 management:
   endpoints:
     web:
@@ -41,6 +75,7 @@ management:
       enabled: true
     circuitbreakers:
       enabled: true
+
 resilience4j:
   circuitbreaker:
     configs:

@@ -7,6 +7,9 @@ COPY mvnw .
 COPY .mvn .mvn
 #copiar o arquivo com as dependências
 COPY pom.xml .
+
+RUN chmod +x ./mvnw
+
 #fazer download de todas dependências sem gerar o JAR final
 RUN ./mvnw dependency:go-offline
 #copiar os arquivos-fonte
